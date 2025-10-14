@@ -14,6 +14,7 @@ import (
 	natsrpc "github.com/evrone/go-clean-template/internal/controller/nats_rpc"
 	"github.com/evrone/go-clean-template/internal/repo/persistent"
 	"github.com/evrone/go-clean-template/internal/repo/webapi"
+	"github.com/evrone/go-clean-template/internal/usecase"
 	"github.com/evrone/go-clean-template/internal/usecase/translation"
 	"github.com/evrone/go-clean-template/pkg/grpcserver"
 	"github.com/evrone/go-clean-template/pkg/httpserver"
@@ -34,11 +35,20 @@ func Run(cfg *config.Config) { //nolint: gocyclo,cyclop,funlen,gocritic,nolintli
 	}
 	defer pg.Close()
 
+	timescale, err := postgres.New(cfg.Timescale.URL, postgres.MaxPoolSize(cfg.Timescale.MaxPoolConns))
+	if err != nil {
+		l.Fatal(fmt.Errorf("app - Run - timescale.New: %w", err))
+	}
+	defer timescale.Close()
+
 	// Use-Case
 	translationUseCase := translation.New(
 		persistent.New(pg),
 		webapi.New(),
 	)
+
+	userRepo := persistent.NewUserRepo(pg)
+	authUsecase := usecase.NewAuth(userRepo, cfg.JWT.Secret)
 
 	// RabbitMQ RPC Server
 	rmqRouter := amqprpc.NewRouter(translationUseCase, l)
@@ -62,7 +72,7 @@ func Run(cfg *config.Config) { //nolint: gocyclo,cyclop,funlen,gocritic,nolintli
 
 	// HTTP Server
 	httpServer := httpserver.New(l, httpserver.Port(cfg.HTTP.Port), httpserver.Prefork(cfg.HTTP.UsePreforkMode))
-	http.NewRouter(httpServer.App, cfg, translationUseCase, l)
+	http.NewRouter(httpServer.App, cfg, translationUseCase, *authUsecase, l)
 
 	// Start servers
 	rmqServer.Start()

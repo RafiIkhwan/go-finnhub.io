@@ -2,9 +2,6 @@
 
 # Go Clean template
 
-[🇨🇳 中文](README_CN.md)
-[🇷🇺 RU](README_RU.md)
-
 Clean Architecture template for Golang services
 
 [![Release](https://img.shields.io/github/v/release/evrone/go-clean-template.svg)](https://github.com/evrone/go-clean-template/releases/)

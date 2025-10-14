@@ -22,7 +22,7 @@ import (
 // @version     1.0
 // @host        localhost:8080
 // @BasePath    /v1
-func NewRouter(app *fiber.App, cfg *config.Config, t usecase.Translation, l logger.Interface) {
+func NewRouter(app *fiber.App, cfg *config.Config, t usecase.Translation, a usecase.Auth, l logger.Interface) {
 	// Options
 	app.Use(middleware.Logger(l))
 	app.Use(middleware.Recovery(l))
@@ -45,6 +45,11 @@ func NewRouter(app *fiber.App, cfg *config.Config, t usecase.Translation, l logg
 	// Routers
 	apiV1Group := app.Group("/v1")
 	{
-		v1.NewTranslationRoutes(apiV1Group, t, l)
+		// Auth routes (no JWT required for login/register)
+		v1.NewAuthRoutes(apiV1Group, a)
+		
+		// Protected routes group with JWT middleware
+		protectedGroup := apiV1Group.Group("/", middleware.JWTAuth(cfg.JWT.Secret))
+		v1.NewTranslationRoutes(protectedGroup, t, l)
 	}
 }

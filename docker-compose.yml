@@ -1,13 +1,21 @@
 version: "3.9"
 
 
-x-db-environment: &x-db-environment
+x-postgres-environment: &x-postgres-environment
   POSTGRES_SSL_MODE: "disable"
-  POSTGRES_HOST: "db"
+  POSTGRES_HOST: "postgres_finnhub"
   POSTGRES_PORT: "5432"
-  POSTGRES_DB: "db"
+  POSTGRES_DB: "postgres_db"
   POSTGRES_PASSWORD: "myAwEsOm3pa55@w0rd"
-  POSTGRES_USER: "user"
+  POSTGRES_USER: "postgres_user"
+
+x-timescale-environment: &x-timescale-environment
+  POSTGRES_SSL_MODE: "disable"
+  POSTGRES_HOST: "timescaledb"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "timescale_db"
+  POSTGRES_PASSWORD: "myAwEsOm3pa55@w0rd"
+  POSTGRES_USER: "timescale_user"
 
 x-rabbitmq-variables: &x-rabbitmq-variables
   RABBITMQ_DEFAULT_USER: "guest"
@@ -25,7 +33,10 @@ x-backend-app-environment: &x-backend-app-environment
   LOG_LEVEL: "debug"
   # PG
   PG_POOL_MAX: "2"
-  PG_URL: "postgres://user:myAwEsOm3pa55@w0rd@db:5432/db"
+  PG_URL: "postgres://postgres_user:myAwEsOm3pa55@w0rd@postgres_finnhub:5432/postgres_db"
+  # TIMESCALE
+  TIMESCALE_POOL_MAX: "2"
+  TIMESCALE_URL: "postgres://timescale_user:myAwEsOm3pa55@w0rd@timescaledb:5432/timescale_db"
   # gRPC
   GRPC_PORT: "8081"
   # RMQ
@@ -39,22 +50,38 @@ x-backend-app-environment: &x-backend-app-environment
   METRICS_ENABLED: "true"
   # Swagger
   SWAGGER_ENABLED: "true"
+  # JWT
+  JWT_SECRET: "secret"
 
 
 services:
-  db:
-    container_name: db
+  postgres_finnhub:
+    container_name: postgres_finnhub
     image: postgres:17-alpine
     environment:
-      <<: *x-db-environment
+      <<: *x-postgres-environment
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
     networks:
       app_network:
         aliases:
-          - db.lvh.me
+          - postgres.lvh.me
+
+  timescaledb:
+    container_name: timescaledb
+    image: timescale/timescaledb:latest-pg17
+    environment:
+      <<: *x-timescale-environment
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      app_network:
+        aliases:
+          - timescaledb.lvh.me
 
   rabbitmq:
     container_name: rabbitmq
@@ -97,7 +124,8 @@ services:
       - "8080:8080"
       - "8081:8081"
     depends_on:
-      - db
+      - postgres_finnhub
+      - timescaledb
       - rabbitmq
     deploy:
       resources:
@@ -134,6 +162,7 @@ networks:
 
 
 volumes:
-  db_data:
   rabbitmq_data:
   nats_data:
+  postgres_data:
+  timescale_data:

@@ -13,12 +13,15 @@ type (
 		HTTP    HTTP
 		Log     Log
 		PG      PG
+		Timescale Timescale
 		GRPC    GRPC
 		RMQ     RMQ
 		NATS    NATS
 		Metrics Metrics
 		Swagger Swagger
+		JWT     JWT
 	}
+	
 
 	// App -.
 	App struct {
@@ -41,6 +44,12 @@ type (
 	PG struct {
 		PoolMax int    `env:"PG_POOL_MAX,required"`
 		URL     string `env:"PG_URL,required"`
+	}
+
+	// TIMESCALE -.
+	Timescale struct {
+		URL          string `env:"TIMESCALE_URL,required"`
+		MaxPoolConns int    `env:"TIMESCALE_POOL_MAX,required"`
 	}
 
 	// GRPC -.
@@ -69,6 +78,11 @@ type (
 	// Swagger -.
 	Swagger struct {
 		Enabled bool `env:"SWAGGER_ENABLED" envDefault:"false"`
+	}
+
+	// JWT -.
+	JWT struct {
+		Secret string `env:"JWT_SECRET,required"`
 	}
 )
 
