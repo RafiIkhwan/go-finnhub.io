@@ -45,7 +45,6 @@ func NewRouter(app *fiber.App, cfg *config.Config, t usecase.Translation, a usec
 	// Routers
 	apiV1Group := app.Group("/v1")
 	{
-		// Auth routes (no JWT required for login/register)
 		v1.NewAuthRoutes(apiV1Group, a)
 		
 		// Protected routes group with JWT middleware

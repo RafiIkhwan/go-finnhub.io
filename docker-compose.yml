@@ -2,56 +2,56 @@ version: "3.9"
 
 
 x-postgres-environment: &x-postgres-environment
-  POSTGRES_SSL_MODE: "disable"
-  POSTGRES_HOST: "postgres_finnhub"
-  POSTGRES_PORT: "5432"
-  POSTGRES_DB: "postgres_db"
-  POSTGRES_PASSWORD: "myAwEsOm3pa55@w0rd"
-  POSTGRES_USER: "postgres_user"
+  POSTGRES_SSL_MODE: ${POSTGRES_SSL_MODE}
+  POSTGRES_HOST: ${POSTGRES_HOST}
+  POSTGRES_PORT: ${POSTGRES_PORT}
+  POSTGRES_DB: ${POSTGRES_DB}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  POSTGRES_USER: ${POSTGRES_USER}
 
 x-timescale-environment: &x-timescale-environment
-  POSTGRES_SSL_MODE: "disable"
-  POSTGRES_HOST: "timescaledb"
-  POSTGRES_PORT: "5432"
-  POSTGRES_DB: "timescale_db"
-  POSTGRES_PASSWORD: "myAwEsOm3pa55@w0rd"
-  POSTGRES_USER: "timescale_user"
+  POSTGRES_SSL_MODE: ${TIMESCALE_SSL_MODE}
+  POSTGRES_HOST: ${TIMESCALE_HOST}
+  POSTGRES_PORT: ${TIMESCALE_PORT}
+  POSTGRES_DB: ${TIMESCALE_DB}
+  POSTGRES_PASSWORD: ${TIMESCALE_PASSWORD}
+  POSTGRES_USER: ${TIMESCALE_USER}
 
 x-rabbitmq-variables: &x-rabbitmq-variables
-  RABBITMQ_DEFAULT_USER: "guest"
-  RABBITMQ_DEFAULT_PASS: "guest"
+  RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+  RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
 
 x-backend-app-environment: &x-backend-app-environment
-  GOMAXPROCS: "1"
+  GOMAXPROCS: ${GOMAXPROCS}
   # App
-  APP_NAME: "go-clean-template"
-  APP_VERSION: "1.0.0"
+  APP_NAME: ${APP_NAME}
+  APP_VERSION: ${APP_VERSION}
   # HTTP settings
-  HTTP_PORT: "8080"
-  HTTP_USE_PREFORK_MODE: "false"
+  HTTP_PORT: ${HTTP_PORT}
+  HTTP_USE_PREFORK_MODE: ${HTTP_USE_PREFORK_MODE}
   # Logger
-  LOG_LEVEL: "debug"
+  LOG_LEVEL: ${LOG_LEVEL}
   # PG
-  PG_POOL_MAX: "2"
-  PG_URL: "postgres://postgres_user:myAwEsOm3pa55@w0rd@postgres_finnhub:5432/postgres_db"
+  PG_POOL_MAX: ${PG_POOL_MAX}
+  PG_URL: ${PG_URL}
   # TIMESCALE
-  TIMESCALE_POOL_MAX: "2"
-  TIMESCALE_URL: "postgres://timescale_user:myAwEsOm3pa55@w0rd@timescaledb:5432/timescale_db"
+  TIMESCALE_POOL_MAX: ${TIMESCALE_POOL_MAX}
+  TIMESCALE_URL: ${TIMESCALE_URL}
   # gRPC
-  GRPC_PORT: "8081"
+  GRPC_PORT: ${GRPC_PORT}
   # RMQ
-  RMQ_RPC_SERVER: "rpc_server"
-  RMQ_RPC_CLIENT: "rpc_client"
-  RMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+  RMQ_RPC_SERVER: ${RMQ_RPC_SERVER}
+  RMQ_RPC_CLIENT: ${RMQ_RPC_CLIENT}
+  RMQ_URL: ${RMQ_URL}
   # NATS
-  NATS_RPC_SERVER: "rpc_server"
-  NATS_URL: "nats://guest:guest@nats:4222/"
+  NATS_RPC_SERVER: ${NATS_RPC_SERVER}
+  NATS_URL: ${NATS_URL}
   # Metrics
-  METRICS_ENABLED: "true"
+  METRICS_ENABLED: ${METRICS_ENABLED}
   # Swagger
-  SWAGGER_ENABLED: "true"
+  SWAGGER_ENABLED: ${SWAGGER_ENABLED}
   # JWT
-  JWT_SECRET: "secret"
+  JWT_SECRET: ${JWT_SECRET}
 
 
 services:

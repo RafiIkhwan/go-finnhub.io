@@ -1,8 +1,10 @@
 package middleware
 
 import (
-    "github.com/gofiber/fiber/v2"
-    "github.com/golang-jwt/jwt/v5"
+	"strings"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func JWTAuth(secret string) fiber.Handler {
@@ -11,6 +13,14 @@ func JWTAuth(secret string) fiber.Handler {
         if tokenStr == "" {
             return fiber.ErrUnauthorized
         }
+        
+        tokenParts := strings.Split(tokenStr, " ")
+        if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+            return fiber.ErrUnauthorized
+        }
+
+        tokenStr = tokenParts[1]
+
         token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
             return []byte(secret), nil
         })
