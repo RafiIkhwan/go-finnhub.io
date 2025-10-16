@@ -52,6 +52,8 @@ x-backend-app-environment: &x-backend-app-environment
   SWAGGER_ENABLED: ${SWAGGER_ENABLED}
   # JWT
   JWT_SECRET: ${JWT_SECRET}
+  # Finnhub
+  FINNHUB_API_KEY: ${FINNHUB_API_KEY}
 
 
 services:

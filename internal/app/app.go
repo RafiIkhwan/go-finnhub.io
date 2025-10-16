@@ -6,16 +6,17 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"context"
 
 	"github.com/evrone/go-clean-template/config"
 	amqprpc "github.com/evrone/go-clean-template/internal/controller/amqp_rpc"
 	"github.com/evrone/go-clean-template/internal/controller/grpc"
 	"github.com/evrone/go-clean-template/internal/controller/http"
 	natsrpc "github.com/evrone/go-clean-template/internal/controller/nats_rpc"
-	"github.com/evrone/go-clean-template/internal/repo/persistent"
-	"github.com/evrone/go-clean-template/internal/repo/webapi"
 	"github.com/evrone/go-clean-template/internal/usecase"
 	"github.com/evrone/go-clean-template/internal/usecase/translation"
+	"github.com/evrone/go-clean-template/internal/repo/persistent"
+	"github.com/evrone/go-clean-template/internal/repo/webapi"
 	"github.com/evrone/go-clean-template/pkg/grpcserver"
 	"github.com/evrone/go-clean-template/pkg/httpserver"
 	"github.com/evrone/go-clean-template/pkg/logger"
@@ -50,6 +51,17 @@ func Run(cfg *config.Config) { //nolint: gocyclo,cyclop,funlen,gocritic,nolintli
 	userRepo := persistent.NewUserRepo(pg)
 	authUsecase := usecase.NewAuth(userRepo, cfg.JWT.Secret)
 
+	// WebSocket Trade API
+	finnhubRepo, err := webapi.NewFinnhubRepo(cfg.Finnhub.APIKey)
+	if err != nil {
+		l.Fatal(fmt.Errorf("app - Run - webapi.NewFinnhubRepo: %w", err))
+	}
+	defer finnhubRepo.Close()
+
+	tradeUsecase := usecase.NewTradeStream(finnhubRepo)
+	
+	go listenToTrades(tradeUsecase, "AAPL", l)
+
 	// RabbitMQ RPC Server
 	rmqRouter := amqprpc.NewRouter(translationUseCase, l)
 
@@ -72,7 +84,7 @@ func Run(cfg *config.Config) { //nolint: gocyclo,cyclop,funlen,gocritic,nolintli
 
 	// HTTP Server
 	httpServer := httpserver.New(l, httpserver.Port(cfg.HTTP.Port), httpserver.Prefork(cfg.HTTP.UsePreforkMode))
-	http.NewRouter(httpServer.App, cfg, translationUseCase, *authUsecase, l)
+	http.NewRouter(httpServer.App, cfg, translationUseCase, *authUsecase, tradeUsecase, l)
 
 	// Start servers
 	rmqServer.Start()
@@ -116,5 +128,17 @@ func Run(cfg *config.Config) { //nolint: gocyclo,cyclop,funlen,gocritic,nolintli
 	err = natsServer.Shutdown()
 	if err != nil {
 		l.Error(fmt.Errorf("app - Run - natsServer.Shutdown: %w", err))
+	}
+}
+
+func listenToTrades(uc *usecase.TradeStream, symbol string, l *logger.Logger) {
+	ch, err := uc.SubscribeToTrades(context.Background(), symbol)
+	if err != nil {
+		l.Error(fmt.Errorf("app - Run - uc.SubscribeToTrades: %w", err))
+		return
+	}
+	for trade := range ch {
+		l.Info("http server - Server - Started")
+		fmt.Printf("Received trade: Symbol=%s, Price=%.2f, Time=%s\n", trade.Symbol, trade.Price, trade.GetTime())
 	}
 }

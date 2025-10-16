@@ -1,14 +1,20 @@
 package entity
 
+import "time"
+
 type RealTimeTrade struct {
 	Type string         `json:"type"`
 	Data []TradeDetails `json:"data"`
 }
 
 type TradeDetails struct {
-	Symbol    string   `json:"s"`
-	Price     float64  `json:"p"`
-	Timestamp int64    `json:"t"`
-	Volume    float64  `json:"v"`
+	Symbol     string   `json:"s"`
+	Price      float64  `json:"p"`
+	Timestamp  int64    `json:"t"`
+	Volume     float64  `json:"v"`
 	Conditions []string `json:"c,omitempty"`
+}
+
+func (t *TradeDetails) GetTime() time.Time {
+	return time.UnixMilli(t.Timestamp)
 }

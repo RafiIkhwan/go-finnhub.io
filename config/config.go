@@ -20,6 +20,7 @@ type (
 		Metrics Metrics
 		Swagger Swagger
 		JWT     JWT
+		Finnhub Finnhub
 	}
 	
 
@@ -83,6 +84,11 @@ type (
 	// JWT -.
 	JWT struct {
 		Secret string `env:"JWT_SECRET,required"`
+	}
+
+	// Finnhub -.
+	Finnhub struct {
+		APIKey string `env:"FINNHUB_API_KEY,required"`
 	}
 )
 

@@ -22,7 +22,13 @@ import (
 // @version     1.0
 // @host        localhost:8080
 // @BasePath    /v1
-func NewRouter(app *fiber.App, cfg *config.Config, t usecase.Translation, a usecase.Auth, l logger.Interface) {
+func NewRouter(
+	app *fiber.App, 
+	cfg *config.Config, 
+	t usecase.Translation, 
+	a usecase.Auth, 
+	ts *usecase.TradeStream, 
+	l logger.Interface) {
 	// Options
 	app.Use(middleware.Logger(l))
 	app.Use(middleware.Recovery(l))
@@ -50,5 +56,6 @@ func NewRouter(app *fiber.App, cfg *config.Config, t usecase.Translation, a usec
 		// Protected routes group with JWT middleware
 		protectedGroup := apiV1Group.Group("/", middleware.JWTAuth(cfg.JWT.Secret))
 		v1.NewTranslationRoutes(protectedGroup, t, l)
+		v1.NewTradeRoutes(protectedGroup, ts)
 	}
 }
