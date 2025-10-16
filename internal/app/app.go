@@ -138,6 +138,8 @@ func listenToTrades(uc *usecase.TradeStream, symbol string, l *logger.Logger) {
 		return
 	}
 	for trade := range ch {
+		metricRepo := persistent.NewMetricRepo(&postgres.Postgres{})
+		_ = metricRepo.Create(context.Background(), trade)
 		l.Info("http server - Server - Started")
 		fmt.Printf("Received trade: Symbol=%s, Price=%.2f, Time=%s\n", trade.Symbol, trade.Price, trade.GetTime())
 	}
